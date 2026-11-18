@@ -1,23 +1,29 @@
 
-name: Build APK
+name: Build GameMaker APK
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
+      - name: Extract project
+        run: |
+          mkdir project
+          unzip -o GameMaker-flat.zip -d project
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Unit tests
-        run: node --test tests/*.test.js
+      - name: Run tests
+        run: cd project && node --test tests/*.test.js
 
       - uses: actions/setup-java@v4
         with:
@@ -28,11 +34,10 @@ jobs:
         with:
           gradle-version: 8.9
 
-      - name: Build debug APK
-        run: gradle :app:assembleDebug --no-daemon --stacktrace
+      - name: Build APK
+        run: cd project && gradle :app:assembleDebug --no-daemon
 
       - uses: actions/upload-artifact@v4
         with:
-          name: GameMaker-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
-
+          name: GameMaker-APK
+          path: project/app/build/outputs/apk/debug/app-debug.apk
